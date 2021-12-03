@@ -34,7 +34,8 @@ func (mt *MyTime) SetLocation(location *time.Location) {
 
 // NowTimestamp 获取当前时间戳
 func (mt *MyTime) NowTimestamp() int64 {
-	return time.Now().Unix()
+	// 时间戳无时区之分，time.Now().Unix()与之相同
+	return time.Now().In(mt.location).Unix()
 }
 
 // Date 将时间戳解析成对应格式的时间格式
@@ -44,15 +45,17 @@ func (mt *MyTime) Date(format string, ts int64) string {
 
 // FormatTimestamp 将时间戳解析成对应格式的时间格式
 func (mt *MyTime) FormatTimestamp(format string, ts int64) string {
+	var tt time.Time
 	if ts == 0 {
-		ts = mt.NowTimestamp()
+		tt = time.Now().In(mt.location)
+	} else {
+		tt = time.Unix(ts, 0).In(mt.location)
 	}
-	t := time.Unix(ts, 0).In(mt.location)
-	return mt.Format(format, t)
+	return mt.Format(format, tt)
 }
 
 // Format 跟 PHP 中 date 类似的使用方式，如果 ts 没传递，则使用当前时间
-func (mt *MyTime) Format(format string, ts ...time.Time) string {
+func (mt *MyTime) Format(format string, tts ...time.Time) string {
 	patterns := []string{
 		// 年
 		"Y", "2006", // 4 位数字完整表示的年份
@@ -86,11 +89,13 @@ func (mt *MyTime) Format(format string, ts ...time.Time) string {
 	replacer := strings.NewReplacer(patterns...)
 	format = replacer.Replace(format)
 
-	t := time.Now()
-	if len(ts) > 0 {
-		t = ts[0]
+	var tt time.Time
+	if len(tts) > 0 {
+		tt = tts[0]
+	} else {
+		tt = time.Now().In(mt.location)
 	}
-	return t.Format(format)
+	return tt.Format(format)
 }
 
 // StrToLocalTime 将字符串格式的本地时间表示为Go语言的时间类型
@@ -153,22 +158,22 @@ func (mt *MyTime) StrToTime(value string) (time.Time, error) {
 		time.StampNano,
 	}
 
-	var t time.Time
+	var tt time.Time
 	var err error
 	for _, layout := range layouts {
-		t, err = time.ParseInLocation(layout, value, mt.location)
+		tt, err = time.ParseInLocation(layout, value, mt.location)
 		if err == nil {
-			return t, nil
+			return tt, nil
 		}
 	}
-	return time.Time{}, err
+	return tt, err
 }
 
 // StrToTimestamp 将字符串转为时间戳
 func (mt *MyTime) StrToTimestamp(value string) int64 {
-	ts, err := mt.StrToTime(value)
+	tt, err := mt.StrToTime(value)
 	if err == nil {
-		return ts.Unix()
+		return tt.Unix()
 	} else {
 		return 0
 	}
@@ -176,16 +181,16 @@ func (mt *MyTime) StrToTimestamp(value string) int64 {
 
 // StartTimestampOfDay 当天零点的时间戳
 func (mt *MyTime) StartTimestampOfDay(value string) int64 {
-	ts, err := mt.StrToTime(value)
+	tt, err := mt.StrToTime(value)
 	if err != nil {
 		return 0
 	}
-	ts = time.Date(ts.Year(), ts.Month(), ts.Day(), 0, 0, 0, 0, mt.location)
-	return ts.Unix()
+	tt = time.Date(tt.Year(), tt.Month(), tt.Day(), 0, 0, 0, 0, mt.location)
+	return tt.Unix()
 }
 
 // StartTimestampOfDayTime 当天零点的时间戳
-func (mt *MyTime) StartTimestampOfDayTime(ts time.Time) int64 {
-	ts = time.Date(ts.Year(), ts.Month(), ts.Day(), 0, 0, 0, 0, mt.location)
-	return ts.Unix()
+func (mt *MyTime) StartTimestampOfDayTime(tt time.Time) int64 {
+	tt = time.Date(tt.Year(), tt.Month(), tt.Day(), 0, 0, 0, 0, mt.location)
+	return tt.Unix()
 }
