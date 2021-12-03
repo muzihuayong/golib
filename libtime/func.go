@@ -40,8 +40,8 @@ func FormatTimestamp(format string, ts int64) string {
 }
 
 // Format 跟 PHP 中 date 类似的使用方式，如果 ts 没传递，则使用当前时间
-func Format(format string, ts ...time.Time) string {
-	return myTime.Format(format, ts...)
+func Format(format string, tt ...time.Time) string {
+	return myTime.Format(format, tt...)
 }
 
 // StrToLocalTime 将字符串格式的本地时间表示为Go语言的时间类型
@@ -61,16 +61,16 @@ func StrToTimestamp(value string) int64 {
 
 // StartTimestampOfDay 当天零点的时间戳
 func StartTimestampOfDay(value string) int64 {
-	ts, err := myTime.StrToTime(value)
+	tt, err := myTime.StrToTime(value)
 	if err != nil {
 		return 0
 	}
-	ts = time.Date(ts.Year(), ts.Month(), ts.Day(), 0, 0, 0, 0, myTime.location)
-	return ts.Unix()
+	tt = time.Date(tt.Year(), tt.Month(), tt.Day(), 0, 0, 0, 0, myTime.location)
+	return tt.Unix()
 }
 
 // StartTimestampOfDayTime 当天零点的时间戳
-func StartTimestampOfDayTime(ts time.Time) int64 {
-	ts = time.Date(ts.Year(), ts.Month(), ts.Day(), 0, 0, 0, 0, myTime.location)
-	return ts.Unix()
+func StartTimestampOfDayTime(tt time.Time) int64 {
+	tt = time.Date(tt.Year(), tt.Month(), tt.Day(), 0, 0, 0, 0, myTime.location)
+	return tt.Unix()
 }
