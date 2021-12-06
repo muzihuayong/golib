@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+// 参考：https://github.com/polaris1119/times
+
 type MyTime struct {
 	// 时区设置
 	location *time.Location
